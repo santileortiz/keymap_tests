@@ -132,30 +132,6 @@ enum cli_parser_err_t {
     CP_ERR_UNRECOGNIZED_OPT
 };
 
-#if __GNUC__ > 2
-#define GCC_PRINTF_FORMAT(fmt_idx, arg_idx) __attribute__((format (printf, fmt_idx, arg_idx)))
-#else
-#define GCC_PRINTF_FORMAT(fmt_idx, arg_idx)
-#endif
-
-GCC_PRINTF_FORMAT(2, 3)
-char* pprintf (mem_pool_t *pool, const char *format, ...)
-{
-    va_list args1, args2;
-    va_start (args1, format);
-    va_copy (args2, args1);
-
-    size_t size = vsnprintf (NULL, 0, format, args1) + 1;
-    va_end (args1);
-
-    char *str = mem_pool_push_size (pool, size);
-
-    vsnprintf (str, size, format, args2);
-    va_end (args2);
-
-    return str;
-}
-
 bool cli_parser_get_next (struct cli_parser_t *parser, int argc, char *argv[], struct cli_opt_t *opt)
 {
     bool retval = false;
