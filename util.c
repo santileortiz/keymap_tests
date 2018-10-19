@@ -80,6 +80,8 @@ void gdk_modifier_type_print (GdkModifierType mods)
 
     if (mods & ~GDK_MODIFIER_MASK) {
         printf (" (");
+
+#if GTK_CHECK_VERSION(3,0,0)
         if (mods & GDK_MODIFIER_RESERVED_13_MASK) {
             printf (" GDK_MODIFIER_RESERVED_13_MASK");
         }
@@ -135,6 +137,7 @@ void gdk_modifier_type_print (GdkModifierType mods)
         if (mods & GDK_MODIFIER_RESERVED_29_MASK) {
             printf (" GDK_MODIFIER_RESERVED_29_MASK");
         }
+#endif
 
         if (mods & GDK_RELEASE_MASK) {
             printf (" GDK_RELEASE_MASK");
@@ -146,6 +149,7 @@ void gdk_modifier_type_print (GdkModifierType mods)
 
 void gdk_keymap_print_intents ()
 {
+#if GTK_CHECK_VERSION(3,0,0)
     GdkDisplay *disp = gdk_display_get_default ();
     GdkKeymap *keymap = gdk_keymap_get_for_display (disp);
     GdkModifierType mods;
@@ -198,6 +202,10 @@ void gdk_keymap_print_intents ()
         gdk_modifier_type_print (mods);
         printf ("\n");
     }
+
+#else
+    printf ("GTK2, No intents\n");
+#endif
 }
 
 void gdk_event_key_print (GdkEventKey *event)

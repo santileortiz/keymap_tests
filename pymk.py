@@ -24,18 +24,18 @@ def libxkbcommon_test ():
 
 def im_gtk3 ():
     print ("BUILDING IM FOR GTK3")
-    ex ('gcc -shared -fPIC {FLAGS} -o bin/im-kle-xkb.so im/kle_im_context.c im/kle_im_module.c {GTK3_FLAGS} -lm -lxkbcommon')
+    ex ('gcc -shared -fPIC {FLAGS} -o bin/my-test-im.so im/my_test_im_context.c im/my_test_im_module.c {GTK3_FLAGS} -lm -lxkbcommon')
     ex ('gcc {FLAGS} -o bin/test_im im/test_im.c {GTK3_FLAGS}')
-    ex ('chmod 644 bin/im-kle-xkb.so', echo=False)
-    ex ('sudo cp bin/im-kle-xkb.so /usr/lib/x86_64-linux-gnu/gtk-3.0/3.0.0/immodules')
+    ex ('chmod 644 bin/my-test-im.so', echo=False)
+    ex ('sudo cp bin/my-test-im.so /usr/lib/x86_64-linux-gnu/gtk-3.0/3.0.0/immodules')
     ex ('sudo /usr/lib/x86_64-linux-gnu/libgtk-3-0/gtk-query-immodules-3.0 --update-cache')
 
 def im_gtk2 ():
     print ("BUILDING IM FOR GTK2")
-    ex ('gcc -shared -fPIC {FLAGS} -o bin/im-kle-xkb.so im/kle_im_context.c im/kle_im_module.c {GTK2_FLAGS} -lm -lxkbcommon')
+    ex ('gcc -shared -fPIC {FLAGS} -o bin/my-test-im.so im/my_test_im_context.c im/my_test_im_module.c {GTK2_FLAGS} -lm -lxkbcommon')
     ex ('gcc {FLAGS} -o bin/test_im im/test_im.c {GTK2_FLAGS}')
-    ex ('chmod 644 bin/im-kle-xkb.so', echo=False)
-    ex ('sudo cp bin/im-kle-xkb.so /usr/lib/x86_64-linux-gnu/gtk-2.0/2.10.0/immodules')
+    ex ('chmod 644 bin/my-test-im.so', echo=False)
+    ex ('sudo cp bin/my-test-im.so /usr/lib/x86_64-linux-gnu/gtk-2.0/2.10.0/immodules')
     ex ('sudo /usr/lib/x86_64-linux-gnu/libgtk2.0-0/gtk-query-immodules-2.0 --update-cache')
 
 if __name__ == "__main__":
