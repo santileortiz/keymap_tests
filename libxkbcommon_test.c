@@ -126,12 +126,42 @@ bool cli_parser_opt_lookup (struct cli_parser_t *parser, const char *opt_name, s
     return false;
 }
 
+enum cli_parser_err_t {
+    CP_ERR_NO_ERROR,
+    CP_ERR_MISSING_ARGUMENT,
+    CP_ERR_UNRECOGNIZED_OPT
+};
+
+#if __GNUC__ > 2
+#define GCC_PRINTF_FORMAT(fmt_idx, arg_idx) __attribute__((format (printf, fmt_idx, arg_idx)))
+#else
+#define GCC_PRINTF_FORMAT(fmt_idx, arg_idx)
+#endif
+
+GCC_PRINTF_FORMAT(2, 3)
+char* pprintf (mem_pool_t *pool, const char *format, ...)
+{
+    va_list args1, args2;
+    va_start (args1, format);
+    va_copy (args2, args1);
+
+    size_t size = vsnprintf (NULL, 0, format, args1) + 1;
+    va_end (args1);
+
+    char *str = mem_pool_push_size (pool, size);
+
+    vsnprintf (str, size, format, args2);
+    va_end (args2);
+
+    return str;
+}
+
 bool cli_parser_get_next (struct cli_parser_t *parser, int argc, char *argv[], struct cli_opt_t *opt)
 {
     bool retval = false;
     assert (opt != NULL);
 
-    if (parser->error == 0 && parser->argv_idx + 1 < argc) {
+    if (parser->argv_idx + 1 < argc) {
         int idx = parser->argv_idx + 1;
         if (cli_parser_opt_lookup (parser, argv[idx], opt)) {
             if (opt->expect_arg) {
@@ -141,7 +171,8 @@ bool cli_parser_get_next (struct cli_parser_t *parser, int argc, char *argv[], s
 
                 } else {
                     // Missing argument
-                    parser->error = 1;
+                    parser->error = CP_ERR_MISSING_ARGUMENT;
+                    parser->error_msg = pprintf (&parser->pool, "Missing argument for option '%s'", opt->opt);
                 }
 
             } else {
@@ -151,7 +182,8 @@ bool cli_parser_get_next (struct cli_parser_t *parser, int argc, char *argv[], s
 
         } else {
             // Option not found
-            parser->error = 1;
+            parser->error = CP_ERR_UNRECOGNIZED_OPT;
+            parser->error_msg = pprintf (&parser->pool, "Unrecognized option '%s'", argv[idx]);
         }
 
         if (retval == true) {
@@ -190,7 +222,9 @@ int main(int argc, char *argv[])
             cli_parser_add_opt (&cli_parser, "-o", true, &options);
 
             struct cli_opt_t opt;
-            while (cli_parser_get_next (&cli_parser, argc, argv, &opt)) {
+            while (cli_parser_get_next (&cli_parser, argc, argv, &opt) &&
+                   cli_parser.error == CP_ERR_NO_ERROR)
+            {
                 *(const char **)opt.data = opt.arg;
             }
 
@@ -235,7 +269,7 @@ int main(int argc, char *argv[])
 
     struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx) {
-        printf ("Could not create xkb context.");
+        printf ("Could not create xkb context.\n");
     }
 
     struct xkb_rule_names names = {
@@ -248,7 +282,7 @@ int main(int argc, char *argv[])
     struct xkb_keymap *keymap = xkb_keymap_new_from_names(ctx, &names,
                                                           XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
-        printf ("Could not create keymap.");
+        printf ("Could not create keymap.\n");
     }
 
     num_mods = xkb_keymap_num_mods (keymap);
@@ -258,11 +292,11 @@ int main(int argc, char *argv[])
         mod_names[i] = xkb_keymap_mod_get_name(keymap, i);
         printf ("%s ", mod_names[i]);
     }
-    printf ("\n");
+    printf ("\n\n");
 
     state = xkb_state_new(keymap);
     if (!state) {
-        printf ("Could not create xkb state.");
+        printf ("Could not create xkb state.\n");
     }
 
     gtk_main();
