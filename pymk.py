@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from mkpy import utility as cfg
 from mkpy.utility import *
 import textwrap, re
 
@@ -38,6 +39,7 @@ def im_gtk2 ():
     ex ('sudo cp bin/my-test-im.so /usr/lib/x86_64-linux-gnu/gtk-2.0/2.10.0/immodules')
     ex ('sudo /usr/lib/x86_64-linux-gnu/libgtk2.0-0/gtk-query-immodules-2.0 --update-cache')
 
+cfg.builtin_completions = ['--get_run_deps', '--get_build_deps']
 if __name__ == "__main__":
     # Everything above this line will be executed for each TAB press.
     # If --get_completions is set, handle_tab_complete() calls exit().
