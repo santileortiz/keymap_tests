@@ -23,6 +23,9 @@ def default():
 def libxkbcommon_test ():
     ex ('gcc {FLAGS} -o bin/libxkbcommon_test libxkbcommon_test.c {GTK3_FLAGS} -lm -lxkbcommon')
 
+def keymap_upload ():
+    ex ('gcc {FLAGS} -o bin/keymap_upload keymap_upload.c {GTK3_FLAGS} -lX11 -lm')
+
 def im_gtk3 ():
     print ("BUILDING IM FOR GTK3")
     ex ('gcc -shared -fPIC {FLAGS} -o bin/my-test-im.so im/my_test_im_context.c im/my_test_im_module.c {GTK3_FLAGS} -lm -lxkbcommon')
