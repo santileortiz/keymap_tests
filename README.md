@@ -23,8 +23,8 @@ for example pressing the ; key several times then press tab, it should start to
 print ç.
 
 The way Clutter does this (Gala uses Mutter, which in turn uses Clutter) can be
-toggled by changing the 0 to 1 in the function `key_press()` (the line with
-`#if 0`), and then recompiling with:
+toggled by changing the 0 to 1 in `keymap_upload.c` in the function
+`key_press()` (the line with `#if 0`), and then recompiling with:
 ```
 $ ./pymk keymap_upload
 ```
