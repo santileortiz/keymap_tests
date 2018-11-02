@@ -246,7 +246,12 @@ def ex (cmd, no_stdout=False, ret_stdout=False, echo=True):
         redirect = open(os.devnull, 'wb') if no_stdout else None
         return subprocess.call(resolved_cmd, shell=True, stdout=redirect)
     else:
-        return subprocess.check_output(resolved_cmd, shell=True, stderr=open(os.devnull, 'wb')).decode().strip ()
+        result = ""
+        try:
+            result = subprocess.check_output(resolved_cmd, shell=True, stderr=open(os.devnull, 'wb')).decode().strip ()
+        except subprocess.CalledProcessError as e:
+            pass
+        return result
 
 def info (s):
     # The following code can be used to se available colors
