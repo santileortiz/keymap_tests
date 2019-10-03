@@ -2,17 +2,61 @@
 #include <xkbcommon/xkbcommon.h>
 
 #include "common.h"
+#include "bit_operations.c"
 #include "util.c"
 
 int num_mods;
 const char **mod_names;
 struct xkb_state *state;
 
+#define GDK_MODIFIERS_TABLE                              \
+  GDK_MODIFIERS_ROW(GDK_SHIFT_MASK)                      \
+  GDK_MODIFIERS_ROW(GDK_LOCK_MASK)                       \
+  GDK_MODIFIERS_ROW(GDK_CONTROL_MASK)                    \
+  GDK_MODIFIERS_ROW(GDK_MOD1_MASK)                       \
+  GDK_MODIFIERS_ROW(GDK_MOD2_MASK)                       \
+  GDK_MODIFIERS_ROW(GDK_MOD3_MASK)                       \
+  GDK_MODIFIERS_ROW(GDK_MOD4_MASK)                       \
+  GDK_MODIFIERS_ROW(GDK_MOD5_MASK)                       \
+  GDK_MODIFIERS_ROW(GDK_BUTTON1_MASK)                    \
+  GDK_MODIFIERS_ROW(GDK_BUTTON2_MASK)                    \
+  GDK_MODIFIERS_ROW(GDK_BUTTON3_MASK)                    \
+  GDK_MODIFIERS_ROW(GDK_BUTTON4_MASK)                    \
+  GDK_MODIFIERS_ROW(GDK_BUTTON5_MASK)                    \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_13_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_14_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_15_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_16_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_17_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_18_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_19_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_20_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_21_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_22_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_23_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_24_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_25_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_SUPER_MASK)                      \
+  GDK_MODIFIERS_ROW(GDK_HYPER_MASK)                      \
+  GDK_MODIFIERS_ROW(GDK_META_MASK)                       \
+  GDK_MODIFIERS_ROW(GDK_MODIFIER_RESERVED_29_MASK)       \
+  GDK_MODIFIERS_ROW(GDK_RELEASE_MASK)
+  
+char *gdk_modifier_names[32] = {0};
+
+void gdk_modifier_names_init ()
+{
+#define GDK_MODIFIERS_ROW(name) \
+    gdk_modifier_names[bit_pos(name)] = #name;
+    GDK_MODIFIERS_TABLE
+#undef GDK_MODIFIERS_ROW
+}
+
 static gint key_press (GtkWidget *widget, GdkEventKey *event)
 {
     xkb_keycode_t keycode = event->hardware_keycode;
     enum xkb_state_component changed;
-    printf ("Type: ");
+    printf ("type: ");
     if (event->type == GDK_KEY_PRESS) {
         printf ("KEY_PRESS\n");
         changed = xkb_state_update_key(state, keycode, XKB_KEY_DOWN);
@@ -22,6 +66,21 @@ static gint key_press (GtkWidget *widget, GdkEventKey *event)
     } else {
         invalid_code_path;
     }
+
+    printf ("state: ");
+    bool is_first = true;
+    for (uint32_t mask = event->state;
+         mask;
+         mask = mask & (mask-1)) {
+        uint32_t next_bit_mask = mask & -mask;
+
+        if (!is_first) {
+            printf (", ");
+        }
+        is_first = false;
+        printf ("%s", gdk_modifier_names[bit_pos(next_bit_mask)]);
+    }
+    printf ("\n");
 
     printf ("Changed: %x\n", changed);
 
@@ -177,6 +236,7 @@ void cli_parser_destroy (struct cli_parser_t *parser)
 
 int main(int argc, char *argv[])
 {
+    gdk_modifier_names_init ();
 
     char *rules = NULL;
     char *model = NULL;
